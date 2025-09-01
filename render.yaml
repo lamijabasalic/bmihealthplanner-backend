@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: health-planner-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: AIVEN_DB_PASSWORD
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: APP_CORS_ALLOWED_ORIGIN
+        value: "*"
+    healthCheckPath: /swagger
+    autoDeploy: true
