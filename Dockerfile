@@ -4,22 +4,19 @@ FROM openjdk:17-jdk-slim
 # Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
+# Copy pom.xml first for better caching
 COPY pom.xml .
-
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
 COPY src src
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# Install Maven and build the application
+RUN apt-get update && \
+    apt-get install -y maven && \
+    mvn clean package -DskipTests && \
+    apt-get remove -y maven && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Expose port 8080
 EXPOSE 8080
