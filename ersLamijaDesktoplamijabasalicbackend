@@ -1,0 +1,8 @@
+[33m8555ce7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m 🔒 Secure backend: Remove sensitive data, add production profile, and update Docker config for Render deployment
+[33m6d4b65e[m 🔧 Fix database connection - add MySQL driver class name and clean up dependencies
+[33m0742c01[m 🔒 Remove sensitive data from deployment guide
+[33md369f43[m 📚 Add Render deployment guide with environment variable instructions
+[33m358179c[m 🔧 Add clean render.yaml configuration
+[33mf953695[m 🔧 Fix CORS configuration - add default values and environment variable support
+[33m19d051b[m 🔧 Fix Dockerfile - use system Maven instead of wrapper
+[33m30ff834[m 🚀 Initial dockerized backend commit - Spring Boot health planner with Docker support
