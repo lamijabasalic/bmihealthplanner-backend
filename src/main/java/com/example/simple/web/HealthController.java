@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -26,6 +31,10 @@ public class HealthController {
   private final PlanService service;
   private final EmailService emailService;
   private final ObjectMapper om = new ObjectMapper();
+  
+  // Simple in-memory storage for meals (for demo purposes)
+  private static final List<Map<String, Object>> meals = new ArrayList<>();
+  private static long mealIdCounter = 1;
 
   public HealthController(HealthEntryRepository repo, PlanService service, EmailService emailService){
     this.repo = repo; this.service = service; this.emailService = emailService;
@@ -170,5 +179,94 @@ public class HealthController {
     } catch (Exception ex){
       throw new RuntimeException(ex);
     }
+  }
+
+  // ========== MEAL API ENDPOINTS ==========
+  
+  @GetMapping("/meals")
+  @Operation(summary="Get all meals")
+  public List<Map<String, Object>> getAllMeals() {
+    return new ArrayList<>(meals);
+  }
+  
+  @PostMapping("/meals")
+  @Operation(summary="Add a new meal")
+  public ResponseEntity<Map<String, Object>> addMeal(@RequestBody Map<String, Object> mealData) {
+    try {
+      // Validate required fields
+      if (!mealData.containsKey("mealName") || !mealData.containsKey("calories")) {
+        return ResponseEntity.badRequest().build();
+      }
+      
+      String mealName = (String) mealData.get("mealName");
+      Object caloriesObj = mealData.get("calories");
+      Integer calories;
+      
+      if (caloriesObj instanceof Integer) {
+        calories = (Integer) caloriesObj;
+      } else if (caloriesObj instanceof String) {
+        calories = Integer.parseInt((String) caloriesObj);
+      } else {
+        return ResponseEntity.badRequest().build();
+      }
+      
+      if (mealName == null || mealName.trim().isEmpty() || calories <= 0) {
+        return ResponseEntity.badRequest().build();
+      }
+      
+      // Create meal object
+      Map<String, Object> meal = new HashMap<>();
+      meal.put("id", mealIdCounter++);
+      meal.put("mealName", mealName.trim());
+      meal.put("calories", calories);
+      meal.put("date", mealData.getOrDefault("date", LocalDate.now().toString()));
+      meal.put("createdAt", java.time.LocalDateTime.now().toString());
+      
+      // Add to list
+      meals.add(0, meal); // Add to beginning for newest first
+      
+      return ResponseEntity.ok(meal);
+    } catch (Exception e) {
+      return ResponseEntity.internalServerError().build();
+    }
+  }
+  
+  @GetMapping("/meals/{id}")
+  @Operation(summary="Get meal by ID")
+  public ResponseEntity<Map<String, Object>> getMealById(@PathVariable Long id) {
+    return meals.stream()
+      .filter(meal -> meal.get("id").equals(id))
+      .findFirst()
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.notFound().build());
+  }
+  
+  @PutMapping("/meals/{id}")
+  @Operation(summary="Update meal by ID")
+  public ResponseEntity<Map<String, Object>> updateMeal(@PathVariable Long id, @RequestBody Map<String, Object> mealData) {
+    for (int i = 0; i < meals.size(); i++) {
+      Map<String, Object> meal = meals.get(i);
+      if (meal.get("id").equals(id)) {
+        // Update fields
+        if (mealData.containsKey("mealName")) {
+          meal.put("mealName", mealData.get("mealName"));
+        }
+        if (mealData.containsKey("calories")) {
+          meal.put("calories", mealData.get("calories"));
+        }
+        if (mealData.containsKey("date")) {
+          meal.put("date", mealData.get("date"));
+        }
+        return ResponseEntity.ok(meal);
+      }
+    }
+    return ResponseEntity.notFound().build();
+  }
+  
+  @DeleteMapping("/meals/{id}")
+  @Operation(summary="Delete meal by ID")
+  public ResponseEntity<Void> deleteMeal(@PathVariable Long id) {
+    boolean removed = meals.removeIf(meal -> meal.get("id").equals(id));
+    return removed ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
   }
 }
