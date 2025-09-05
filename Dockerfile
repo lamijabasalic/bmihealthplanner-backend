@@ -1,6 +1,10 @@
 # Use OpenJDK 17 as base image
 FROM openjdk:17-jdk-slim
 
+# Add build timestamp to force rebuild
+ARG BUILD_TIMESTAMP
+ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP}
+
 # Set working directory
 WORKDIR /app
 
@@ -13,10 +17,10 @@ COPY src src
 # Install Maven and build the application
 RUN apt-get update && \
     apt-get install -y maven curl && \
-    mvn clean package -DskipTests -U && \
+    mvn clean compile package -DskipTests -U -X && \
     apt-get remove -y maven && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /root/.m2
 
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
