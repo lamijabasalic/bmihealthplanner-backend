@@ -13,7 +13,7 @@ COPY src src
 # Install Maven and build the application
 RUN apt-get update && \
     apt-get install -y maven curl && \
-    mvn clean package -DskipTests && \
+    mvn clean package -DskipTests -U && \
     apt-get remove -y maven && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
