@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.Map;
 @RestController
 @RequestMapping("/api/meals")
 @CrossOrigin(origins = "*")
@@ -43,25 +44,21 @@ public class MealController {
     }
     
     // Add new meal
+    // Add new meal
     @PostMapping
-    public ResponseEntity<Meal> addMeal(@RequestBody Meal meal) {
+    public ResponseEntity<Meal> addMeal(@RequestBody Map<String, Object> mealData) {
         try {
-            // Validate input
-            if (meal.getMealName() == null || meal.getMealName().trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
-            if (meal.getCalories() == null || meal.getCalories() <= 0) {
-                return ResponseEntity.badRequest().build();
-            }
-            if (meal.getDate() == null) {
-                meal.setDate(LocalDate.now());
-            }
-            
+            String mealName = (String) mealData.get("mealName");
+            Object caloriesObj = mealData.get("calories");
+            String dateStr = (String) mealData.get("date");
+            if (mealName == null || mealName.trim().isEmpty()) { return ResponseEntity.badRequest().build(); }
+            Integer calories = caloriesObj instanceof Integer ? (Integer) caloriesObj : Integer.parseInt((String) caloriesObj);
+            if (calories <= 0) { return ResponseEntity.badRequest().build(); }
+            LocalDate date = dateStr != null ? LocalDate.parse(dateStr) : LocalDate.now();
+            Meal meal = new Meal(mealName.trim(), calories, date);
             Meal savedMeal = mealService.addMeal(meal);
             return ResponseEntity.ok(savedMeal);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        } catch (Exception e) { return ResponseEntity.internalServerError().build(); }
     }
     
     // Update meal
