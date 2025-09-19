@@ -19,6 +19,9 @@ public class Meal {
     @Column(nullable = false)
     private LocalDate date;
     
+    @Column(name = "user_email")
+    private String userEmail;
+    
     @Column(name = "created_at", nullable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
     
@@ -29,6 +32,14 @@ public class Meal {
         this.mealName = mealName;
         this.calories = calories;
         this.date = date;
+        this.createdAt = java.time.LocalDateTime.now();
+    }
+    
+    public Meal(String mealName, Integer calories, LocalDate date, String userEmail) {
+        this.mealName = mealName;
+        this.calories = calories;
+        this.date = date;
+        this.userEmail = userEmail;
         this.createdAt = java.time.LocalDateTime.now();
     }
     
@@ -63,6 +74,14 @@ public class Meal {
     
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+    
+    public String getUserEmail() {
+        return userEmail;
+    }
+    
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
     
     public java.time.LocalDateTime getCreatedAt() {

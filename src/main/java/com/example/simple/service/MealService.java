@@ -51,6 +51,7 @@ public class MealService {
             meal.setMealName(updatedMeal.getMealName());
             meal.setCalories(updatedMeal.getCalories());
             meal.setDate(updatedMeal.getDate());
+            meal.setUserEmail(updatedMeal.getUserEmail());
             return mealRepository.save(meal);
         }
         throw new RuntimeException("Meal not found with id: " + id);
@@ -78,5 +79,10 @@ public class MealService {
     // Search meals by name
     public List<Meal> searchMealsByName(String mealName) {
         return mealRepository.findByMealNameContainingIgnoreCaseOrderByCreatedAtDesc(mealName);
+    }
+    
+    // Get meals by user email
+    public List<Meal> getMealsByUserEmail(String userEmail) {
+        return mealRepository.findByUserEmailOrderByCreatedAtDesc(userEmail);
     }
 }

@@ -23,6 +23,9 @@ public interface MealRepository extends JpaRepository<Meal, Long> {
     // Find meals by meal name containing (case insensitive)
     List<Meal> findByMealNameContainingIgnoreCaseOrderByCreatedAtDesc(String mealName);
     
+    // Find meals by user email
+    List<Meal> findByUserEmailOrderByCreatedAtDesc(String userEmail);
+    
     // Get total calories for a specific date
     @Query("SELECT COALESCE(SUM(m.calories), 0) FROM Meal m WHERE m.date = :date")
     Integer getTotalCaloriesByDate(LocalDate date);

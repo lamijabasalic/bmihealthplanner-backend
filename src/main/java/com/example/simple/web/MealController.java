@@ -48,17 +48,37 @@ public class MealController {
     @PostMapping
     public ResponseEntity<Meal> addMeal(@RequestBody Map<String, Object> mealData) {
         try {
+            System.out.println("=== BACKEND DEBUG ===");
+            System.out.println("Received mealData: " + mealData);
+            
             String mealName = (String) mealData.get("mealName");
             Object caloriesObj = mealData.get("calories");
             String dateStr = (String) mealData.get("date");
+            String userEmail = (String) mealData.get("userEmail");
+            
+            System.out.println("mealName: " + mealName);
+            System.out.println("caloriesObj: " + caloriesObj);
+            System.out.println("dateStr: " + dateStr);
+            System.out.println("userEmail: " + userEmail);
+            System.out.println("userEmail type: " + (userEmail != null ? userEmail.getClass().getSimpleName() : "null"));
+            
             if (mealName == null || mealName.trim().isEmpty()) { return ResponseEntity.badRequest().build(); }
             Integer calories = caloriesObj instanceof Integer ? (Integer) caloriesObj : Integer.parseInt((String) caloriesObj);
             if (calories <= 0) { return ResponseEntity.badRequest().build(); }
             LocalDate date = dateStr != null ? LocalDate.parse(dateStr) : LocalDate.now();
-            Meal meal = new Meal(mealName.trim(), calories, date);
+            
+            System.out.println("Creating Meal with userEmail: " + userEmail);
+            Meal meal = new Meal(mealName.trim(), calories, date, userEmail);
+            System.out.println("Meal created: " + meal);
+            
             Meal savedMeal = mealService.addMeal(meal);
+            System.out.println("Meal saved: " + savedMeal);
             return ResponseEntity.ok(savedMeal);
-        } catch (Exception e) { return ResponseEntity.internalServerError().build(); }
+        } catch (Exception e) { 
+            System.out.println("Error in addMeal: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build(); 
+        }
     }
     
     // Update meal
@@ -129,6 +149,17 @@ public class MealController {
     public ResponseEntity<List<Meal>> searchMealsByName(@RequestParam String name) {
         try {
             List<Meal> meals = mealService.searchMealsByName(name);
+            return ResponseEntity.ok(meals);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    // Get meals by user email
+    @GetMapping("/user/{userEmail}")
+    public ResponseEntity<List<Meal>> getMealsByUserEmail(@PathVariable String userEmail) {
+        try {
+            List<Meal> meals = mealService.getMealsByUserEmail(userEmail);
             return ResponseEntity.ok(meals);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
